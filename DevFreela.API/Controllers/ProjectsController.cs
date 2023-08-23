@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DevFreela.Application.InputModels;
+using DevFreela.Application.Services.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace DevFreela.API.Controllers
@@ -6,24 +8,19 @@ namespace DevFreela.API.Controllers
     [Route("api/projects")]
     public class ProjectsController : ControllerBase
     {
-        // Utilizando uma configuração do sistema para configurar como o modelo vai se comportar. Neste caso, 
-        // estou utilizando uma propriedade e hora de início e hora de fim permitida para a execussão do programa que está 
-        // definida no appsetting.json que define que horas que o meu programa deve ser executado. esta propriedade pode ser
-        // definida e posso configurar o projeto para, por exemplo, apenas utilizar quando o código estiver rodando em produção
-        // mas desabilitada se o projeto estiver rodando em modo debug
+        private readonly IProjectService _projectService;
 
-        private readonly OpeningTimeOption _option;
-        public ProjectsController(IOptions<OpeningTimeOption> option)
+        public ProjectsController(IProjectService projectService)
         {
-            _option = option.Value;
+            _projectService = projectService;
         }
 
         // api/projects?query=net core
         [HttpGet]
         public IActionResult Get(string query)
         {
-            // TODO Buscar todos ou filtrar
-            return Ok();
+            var project = _projectService.GetAll(query);
+            return Ok(project);
         }
 
 
@@ -31,37 +28,40 @@ namespace DevFreela.API.Controllers
         [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            // TODO Buscar o projeto
+            var project = _projectService.GetById(id);
 
-            // TODO return NotFound();
+            if (project == null)
+            {
+                return NotFound();
+            }
 
-            return Ok();
+            return Ok(project);
         }
 
 
         [HttpPost]
-        public IActionResult Post([FromBody] CreateProjectModel createProject)
+        public IActionResult Post([FromBody] NewProjectInputModel newProject)
         {
-            if (createProject.Title.Length > 50)
+            if (newProject.Title.Length > 50)
             {
                 return BadRequest("Tamanho maior do que o permitido");
             }
 
-            // TODO Cadastrar o projeto
+            var id = _projectService.Create(newProject);
 
-            return CreatedAtAction(nameof(GetById), new { id = createProject.Id }, createProject);
+            return CreatedAtAction(nameof(GetById), new { id = id }, newProject);
         }
 
         // api/projects/2
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] UpdateProjectModel updateProject)
+        public IActionResult Put([FromBody] UpdateProjectInputModel inputModel)
         {
-            if (updateProject.Description.Length > 200)
+            if (inputModel.Description.Length > 200)
             {
                 return BadRequest("Tamanho do texto excede o limite");
             }
 
-            // TODO Atualizo o objeto
+            _projectService.Update(inputModel);
 
             return NoContent();
         }
@@ -71,9 +71,7 @@ namespace DevFreela.API.Controllers
 
         public IActionResult Delete(int id)
         {
-            // TODO Buscar, se não existir, retorna NotFound. Se existir, deleta
-
-            // TODO Remover
+            _projectService.Delete(id);            
             return NoContent();
 
         }
@@ -81,10 +79,10 @@ namespace DevFreela.API.Controllers
         // api/projects/1/comments POST
         [HttpPost("{id}/comments")]
 
-        public IActionResult PostComment(int id, [FromBody] CreateCommentModel createCommentModel)
+        public IActionResult PostComment(int id, [FromBody] CreateCommentInputModel inputModel)
         {
-            // não faz sentido retornar o comentário criado, ou o projeto nesse caso. Portanto
-            // retorno no content
+            _projectService.CreateComment(inputModel);
+            
             return NoContent();
         }
 
@@ -93,6 +91,8 @@ namespace DevFreela.API.Controllers
 
         public IActionResult startProject(int id)
         {
+            _projectService.Start(id);
+
             return NoContent();
         }
 
@@ -101,6 +101,8 @@ namespace DevFreela.API.Controllers
 
         public IActionResult finishProject(int id)
         {
+
+            _projectService.Finish(id);
             return NoContent();
         }
 
