@@ -2,7 +2,7 @@ using DevFreela.API.Controllers;
 using DevFreela.Application.Services.Implementations;
 using DevFreela.Application.Services.Interfaces;
 using DevFreela.Infrastructure.Persistence;
-
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,10 +17,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<OpeningTimeOption>(builder.Configuration.GetSection("OpeningTime"));
 
 // Initialized a database signleton object to initiate persistance layer
-builder.Services.AddSingleton<DevFreelaDbContext>();
+var connectionString = builder.Configuration.GetConnectionString("DevFreelaCs");
+builder.Services.AddDbContext<DevFreelaDbContext>(options => options.UseSqlServer(connectionString));
 
 // Dependency injection between Project service interface and actual implementation
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IUserServices, UserServices>();
 
 var app = builder.Build();
 

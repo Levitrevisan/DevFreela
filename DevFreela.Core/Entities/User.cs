@@ -2,11 +2,12 @@
 {
     public class User : BaseEntity
     {
-        public User(string fullName, string email, DateTime birthDate)
+        public User(string fullName, string email, DateTime birthDate, string password)
         {
             FullName = fullName;
             Email = email;
             BirthDate = birthDate;
+            Password = password; // Adicione esta linha para definir a senha
             Active = true;
 
             CreatedAt = DateTime.Now;
@@ -24,6 +25,7 @@
         public List<UserSkill> Skills { get; private set; }
         public List<Project> OwnedProjects { get; private set; }
         public List<Project> FreelanceProjects { get; private set; }
+        public List<ProjectComment> ProjectComments { get; private set; }
     }
 
 }

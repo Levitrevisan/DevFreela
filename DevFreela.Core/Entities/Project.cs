@@ -20,7 +20,9 @@ namespace DevFreela.Core.Entities
         public String Title { get; private set; }
         public String Description { get; private set; }
         public int IdClient { get; private set; }
+        public User Client { get; private set; }
         public int IdFreelancer { get; private set; }
+        public User Freelancer { get; private set; }
         public decimal TotalCost { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime StartedAt { get; private set; }

@@ -6,14 +6,22 @@ using DevFreela.Infrastructure.Persistence;
 
 namespace DevFreela.Application.Services.Implementations
 {
-    internal class UserServices : IUserServices
+    public class UserServices : IUserServices
     {
         private readonly DevFreelaDbContext _dbContext;
+
+        public UserServices(DevFreelaDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public int CreateUser(NewUserInputModel user)
         {
-            var newUser = new User(user.Fullname, user.Email, user.Birthdate);
+            var newUser = new User(user.Fullname, user.Email, user.Birthdate, user.Password);
 
             _dbContext.Users.Add(newUser);
+
+            _dbContext.SaveChanges();
 
             return newUser.Id;
         }
