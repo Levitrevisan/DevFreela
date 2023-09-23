@@ -1,7 +1,9 @@
-﻿using DevFreela.Application.InputModels;
+﻿using DevFreela.Application.Commands.CreateProject;
+using DevFreela.Application.Commands.StartProject;
+using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DevFreela.API.Controllers
 {
@@ -9,10 +11,12 @@ namespace DevFreela.API.Controllers
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
+        private readonly IMediator _mediator;
 
-        public ProjectsController(IProjectService projectService)
+        public ProjectsController(IProjectService projectService, IMediator mediator)
         {
             _projectService = projectService;
+            _mediator = mediator;
         }
 
         // api/projects?query=net core
@@ -40,17 +44,27 @@ namespace DevFreela.API.Controllers
 
 
         [HttpPost]
-        public IActionResult Post([FromBody] NewProjectInputModel newProject)
+        public async Task<IActionResult> Post([FromBody] CreateProjectCommand command)
         {
-            if (newProject.Title.Length > 50)
+            if (command.Title.Length > 50)
             {
                 return BadRequest("Tamanho maior do que o permitido");
             }
+            var id = await _mediator.Send(command);
 
-            var id = _projectService.Create(newProject);
-
-            return CreatedAtAction(nameof(GetById), new { id = id }, newProject);
+            return CreatedAtAction(nameof(GetById), new { id = id }, command);
         }
+
+        // api/projects/start
+        [HttpPut("/start")]
+
+        public async Task<IActionResult> startProject([FromBody] StartProjectCommand project)
+        {
+            var id = await _mediator.Send(project);
+
+            return NoContent();
+        }
+
 
         // api/projects/2
         [HttpPut("{id}")]
@@ -71,7 +85,7 @@ namespace DevFreela.API.Controllers
 
         public IActionResult Delete(int id)
         {
-            _projectService.Delete(id);            
+            _projectService.Delete(id);
             return NoContent();
 
         }
@@ -82,16 +96,6 @@ namespace DevFreela.API.Controllers
         public IActionResult PostComment(int id, [FromBody] CreateCommentInputModel inputModel)
         {
             _projectService.CreateComment(inputModel);
-            
-            return NoContent();
-        }
-
-        // api/projects/{id}/start
-        [HttpPut("{id}/start")]
-
-        public IActionResult startProject(int id)
-        {
-            _projectService.Start(id);
 
             return NoContent();
         }
