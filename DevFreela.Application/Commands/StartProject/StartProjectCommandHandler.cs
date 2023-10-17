@@ -1,0 +1,39 @@
+﻿using DevFreela.Core.Exceptions;
+using DevFreela.Infrastructure.Persistence;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
+
+namespace DevFreela.Application.Commands.StartProject
+{
+    public class StartProjectCommandHandler : IRequestHandler<StartProjectCommand, Unit>
+    {
+        private readonly DevFreelaDbContext _dbContext;
+
+        public StartProjectCommandHandler(DevFreelaDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public async Task<Unit> Handle(StartProjectCommand request, CancellationToken cancellationToken)
+        {
+            var project = await _dbContext.Projects.SingleOrDefaultAsync(p => p.Id == request.Id);
+            {
+                if (project != null)
+                {
+                    project.Start();
+
+                    await _dbContext.SaveChangesAsync();
+
+                    return Unit.Value;
+                }
+                else {
+                    
+                    throw new ProjectNotFound();
+                }
+
+            }
+
+        }
+    }
+}
