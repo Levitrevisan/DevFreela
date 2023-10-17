@@ -9,7 +9,7 @@ namespace DevFreela.Core.Exceptions
 {
     internal class ProjectAlreadyStarted : Exception
     {
-        public ProjectAlreadyStarted() : base ("Project is alredy in Started status")
+        public ProjectAlreadyStarted() : base ("O Projeto já foi iniciado")
         {
             
         }

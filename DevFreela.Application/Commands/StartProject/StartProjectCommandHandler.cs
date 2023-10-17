@@ -1,6 +1,8 @@
-﻿using DevFreela.Infrastructure.Persistence;
+﻿using DevFreela.Core.Exceptions;
+using DevFreela.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace DevFreela.Application.Commands.StartProject
 {
@@ -15,16 +17,23 @@ namespace DevFreela.Application.Commands.StartProject
 
         public async Task<Unit> Handle(StartProjectCommand request, CancellationToken cancellationToken)
         {
-            var project = _dbContext.Projects.SingleOrDefaultAsync(p => p.Id == request.Id);
+            var project = await _dbContext.Projects.SingleOrDefaultAsync(p => p.Id == request.Id);
             {
                 if (project != null)
                 {
                     project.Start();
-                }
-            }
-            await _dbContext.SaveChangesAsync();
 
-            return Unit.Value;
+                    await _dbContext.SaveChangesAsync();
+
+                    return Unit.Value;
+                }
+                else {
+                    
+                    throw new ProjectNotFound();
+                }
+
+            }
+
         }
     }
 }
